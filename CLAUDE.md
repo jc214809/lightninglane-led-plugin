@@ -12,7 +12,7 @@ A [bullpen](https://github.com/MLB-LED-Scoreboard/mlb-led-scoreboard) plugin tha
 pip install -e .
 ```
 
-The plugin depends on `lightninglane-live-led` (pulled from the `feature/firework` branch of the sibling repo). During local development the sibling repo lives at `../LightningLane-Live-LED`.
+The plugin depends on `lightninglane-live-led` (pulled from the `develop` branch of the sibling repo, per `pyproject.toml`). During local development the sibling repo lives at `../LightningLane-Live-LED`.
 
 ## Plugin architecture
 
@@ -20,9 +20,9 @@ The bullpen framework expects a single `load()` function (registered in `pyproje
 
 | Class | Role |
 |-------|------|
-| `Config` | Reads plugin config keys (`park_name`, `refresh_seconds`) from `base.plugin_config` |
+| `Config` | Reads plugin config keys (`parks`, `refresh_seconds`, `weather_api_key`, `trip_dates`) from `base.plugin_config` |
 | `Data` | On first `update()` call, fetches the WDW park list then starts a daemon background thread (`live_data_updater`) that refreshes live wait-time data in-place on a shared list |
-| `Renderer` | Cycles through `data.open_rides()` one at a time (8 s per ride); calls `initialize_fonts` once on the first render pass |
+| `Renderer` | Phase-based cycle (Mickey intro → trip countdown → parks); within the parks phase, cycles through `data.operating_parks()` and each park's displayable attractions one at a time (8 s per screen); calls `initialize_fonts` once on the first render pass |
 
 ## Dependency library layout (`lightninglane-live-led`)
 
@@ -45,8 +45,14 @@ pytest
 ```json
 {
   "plugin_config": {
-    "park_name": "Magic Kingdom",   // omit to show all WDW parks
-    "refresh_seconds": 300
+    "parks": ["Magic Kingdom", "EPCOT"],   // omit to show all WDW parks
+    "refresh_seconds": 300,
+    "weather_api_key": "your-openweathermap-api-key",   // omit to skip the weather widget
+    "trip_dates": ["2026-06-17"]
   }
 }
 ```
+
+## Weather
+
+`display/park/park_details.py` (in the dependency) shows a weather widget on each park screen, sourced from OpenWeatherMap. The dependency's `fetch_weather_data()` normally reads its own `config.json`'s `weather.apikey`, but that file doesn't exist in the plugin's process — so `Data.update()` passes `Config.weather_api_key` through to `live_data_updater(..., weather_api_key=...)` instead (see [PR #76](https://github.com/jc214809/LightningLane-Live-LED/pull/76) — required on `develop` for this to work; until it merges, weather stays silently disabled). Without a key configured, `fetch_weather_data()` fails soft (logs a warning, returns `None`) and the park screen just omits the weather widget — it does not crash the updater thread.

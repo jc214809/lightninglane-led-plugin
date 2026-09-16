@@ -39,6 +39,7 @@ class Config(api.PluginConfig):
     def __init__(self, base: api.MLBConfig) -> None:
         cfg = base.plugin_config
         self.refresh_seconds = cfg.get("refresh_seconds", 300)
+        self.weather_api_key: str | None = cfg.get("weather_api_key") or None
         raw = cfg.get("parks", [])
         self.park_names: list[str] = [raw] if isinstance(raw, str) else list(raw)
         self.trip_dates: list[date] = []
@@ -69,6 +70,7 @@ class Data(api.PluginData):
             self._thread = threading.Thread(
                 target=live_data_updater,
                 args=(park_list, self.config.refresh_seconds, self._parks_data),
+                kwargs={"weather_api_key": self.config.weather_api_key},
                 daemon=True,
             )
             self._thread.start()
