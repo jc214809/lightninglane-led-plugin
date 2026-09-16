@@ -79,7 +79,7 @@ The `priority` field tells the scoreboard to raise its priority level to `1` whe
 |-----|------|---------|-------------|
 | `parks` | list of strings | all WDW parks | Parks to display. Accepts any destination supported by ThemeParks Wiki (e.g. `"Magic Kingdom"`, `"Cedar Point"`, `"Universal Studios Florida"`). |
 | `refresh_seconds` | int | `300` | How often (in seconds) the background thread re-fetches live wait times. |
-| `weather_api_key` | string | none | [OpenWeatherMap](https://openweathermap.org/api) API key. Omit to show park info without the weather widget — the dependency has no `config.json` of its own to fall back to when run as a plugin. |
+| `weather_api_key` | string | none | Reserved for a future [OpenWeatherMap](https://openweathermap.org/api) integration. Not currently used: the dependency has no `config.json` of its own to read a key from when run as a plugin, and the plumbing to pass one through isn't wired up yet. The weather widget is always omitted for now. |
 | `trip_dates` | list | `[]` | List of upcoming trip dates in `YYYY-MM-DD` format. Drives the countdown screen. Multiple dates are supported; the nearest upcoming date is shown. |
 
 ## How it works

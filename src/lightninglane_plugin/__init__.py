@@ -70,7 +70,6 @@ class Data(api.PluginData):
             self._thread = threading.Thread(
                 target=live_data_updater,
                 args=(park_list, self.config.refresh_seconds, self._parks_data),
-                kwargs={"weather_api_key": self.config.weather_api_key},
                 daemon=True,
             )
             self._thread.start()
