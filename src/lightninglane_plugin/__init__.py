@@ -100,6 +100,14 @@ class Data(api.PluginData):
                 parks.append(park)
         return parks
 
+    def open_parks(self):
+        # Broader than operating_parks(): includes a park with zero
+        # displayable rides right now (e.g. background thread hasn't
+        # completed its first live-data poll yet, or every ride happens to
+        # be CLOSED/REFURBISHMENT). _render_parks degrades gracefully for
+        # such a park by showing only its info screen.
+        return [p for p in self.parks() if p.get("operating")]
+
 
 class Renderer(api.PluginRenderer):
     def __init__(self, config: Config, _layout: api.Layout, _colors: api.Color) -> None:
@@ -118,7 +126,7 @@ class Renderer(api.PluginRenderer):
             initialize_fonts(canvas.height)
             self._fonts_ready = True
 
-        parks = data.operating_parks()
+        parks = data.open_parks()
         if not parks:
             return
 
@@ -162,7 +170,7 @@ class Renderer(api.PluginRenderer):
                 self._park_index = 0
 
     def can_render(self, data: Data) -> bool:
-        return bool(data.operating_parks())
+        return bool(data.open_parks())
 
     def reset(self) -> None:
         pass
